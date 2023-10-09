@@ -1,0 +1,209 @@
+---
+output: 
+  html_document: 
+    toc: yes
+---
+
+# Week 1 Tasks
+
+### Manli Yang
+
+## Task 1 - Literature
+
+### 1. Read the research article of the hands-on working group you are assigned to:
+
+*Spatial Transcriptional Mapping Reveals Site-Specific Pathways Underlying Human Atherosclerotic Plaque Rupture* <https://www.jacc.org/doi/epdf/10.1016/j.jacc.2023.04.008>
+
+### 2. Answer the following questions
+
+##### a. What is the medically relevant insight from the article?
+
+*"plaque site--specific transcriptional signatures associated with proximal rupture-prone regions of carotid atherosclerotic plaques."*
+
+##### b. Which genomics technology/ technologies were used?
+
+*Histology, SEM, bulk and spatial RNA-seq, GWAS*
+
+### 3. Further related research questions
+
+##### a. List and explain at least three questions/ hypotheses you can think of that extend the analysis presented in the paper.
+
+-   MMP9-Associated Pathway Analysis
+-   GWAS-Identified Variants Linked to MMP9
+-   Identification of Potential Therapeutic Targets Beyond MMP9 Based on Expression and Survival.
+
+## Task 2 - Git repositories and R Markdown
+
+## Task 3 - Introduction to R and online R course
+
+## Task 4 - Using R example datasets
+
+### 1. Use the R internal CO2 dataset ("data(CO2)").
+
+```{r}
+library(tidyverse)
+data(CO2)
+```
+
+### 2. Describe briefly the content of the CO2 dataset using the help function.
+
+```{r}
+help(CO2)
+```
+
+### 3. What is the average and median CO2 uptake of the plants from Quebec and Mississippi?
+
+```{r}
+Quebec = CO2 %>% filter(Type == "Quebec")
+Mississippi = CO2 %>% filter(Type == "Mississippi")
+
+#average and median CO2 uptake from Quebec:
+mean(Quebec$uptake)
+median(Quebec$uptake)
+
+#average and median CO2 uptake from Mississippi:
+mean(Mississippi$uptake)
+median(Mississippi$uptake)
+```
+
+## Task 5 - R Functions
+
+### 1. Write a function that calculates the ratio of the mean and the median of a given vector. 5 This is a helpful measure to detect data with outlying values. Note: See Reference for R language
+
+```{r}
+ratio.cal = function(x){
+  ratio = mean(x)/median(x)
+  return(ratio)
+}
+```
+
+### 2. Write a function that ignores the lowest and the highest value from a given vector and calculate the mean.
+
+```{r}
+mean.fil = function(x){
+  x = x[ x != max(x) & x != min(x)]
+  mean.fil = mean(x)
+  return(mean.fil)
+}
+```
+
+### 3. Read about piping from here:<https://r4ds.had.co.nz/pipes.html#pipes> (you don't have to learn everything, a basic understanding of the usage is enough). Write a short (max. 300 characters, no spaces) explanation of why, how, and when not to use pipes.
+
+*Pipes in R, represented by the %\>% operator, streamline code readability and improve workflow. They facilitate a more intuitive left-to-right flow, making it easier to understand how data is being transformed.*
+
+*The basic structure involves chaining functions or operations in a sequential manner using %\>%. The output of one function becomes the input for the next.*
+
+*When not to use the pip: longer than ten stips, have multiple inputs or outputs and if you want a directed graph.*
+
+### 4. Familiarize yourself with the apply-family of functions (apply, lapply, sapply etc.) <http://uc-r.github.io/apply_family> Write a short explanation (max. 300 characters, no spaces) of why they could be useful in your work.
+
+*The apply-family functions are powerful tools for applying a specified function to elements of an array, list, or data frame. They significantly streamline and optimize data processing, particularly when dealing with large datasets or complex data structures.*
+
+*They are more efficient and simplify the code. Ease to use with consistency and reproducibility.*
+
+## Task 6 - Basic visualization with R
+
+### 1. Compare the distributions of the body heights of the two species from the 'magic_guys.csv' dataset graphically
+
+```{r}
+library(ggplot2)
+magic = read.csv("~/Downloads/Week_1/magic_guys.csv")
+```
+
+##### a. using the basic 'hist' function as well as 'ggplot' and 'geom_histogram' functions from the ggplot2 package. Optimize the plots for example by trying several different 'breaks'. Note that ggplot2-based functions give you many more options for changing the visualization parameters, try some of them.
+
+```{r}
+ggplot(magic, aes(x=length))+geom_histogram()+xlab("length") + theme_classic()
+```
+
+### b. Do the same comparison as in a. but with boxplots. If you want to use the
+
+##### b. Do the same comparison as in a. but with boxplots. If you want to use the ggplot2-package, use the functions 'ggplot' and 'geom_boxplot'.
+
+```{r}
+ggplot(magic, aes(y=length, x=species))+geom_boxplot()+xlab("length") + theme_classic()
+```
+
+##### c. Save the plots with the 'png', 'pdf', and 'svg' formats. In which situation would you use which file format?
+
+```{r}
+ggsave("hist", plt1, device = "pdf")
+```
+
+### 2. Load the gene expression data matrix from the 'microarray_data.tab' dataset provided in the shared folder, it is a big tabular separated matrix.
+
+```{r}
+micro = read.table("~/Downloads/Week_1/microarray_data.tab", sep = "\t", header = T)
+```
+
+### a. How big is the matrix in terms of rows and columns?
+
+```{r}
+dim(micro)
+```
+
+### b. Count the missing values per gene and visualize this result.
+
+```{r}
+library(dplyr)
+n.genes = ncol(micro)
+counts.na = sapply(micro, function(x) sum(is.na(x))) %>% as.data.frame() %>% 
+  rename(counts = ".") %>% arrange(counts) %>% mutate(number = 1:n.genes)
+ggplot(counts.na, aes(x = number, y=counts))+geom_point()+xlab("gene rank") + theme_classic()
+```
+
+### c. Find the genes for which there are more than X% (X=10%, 20%, 50%) missing values.
+
+```{r}
+genes.10pct = counts.na %>% filter(counts > (n.genes * 0.1)) %>% rownames()
+genes.20pct = counts.na %>% filter(counts > (n.genes * 0.2)) %>% rownames()
+genes.50pct = counts.na %>% filter(counts > (n.genes * 0.5)) %>% rownames()
+```
+
+### d. Replace the missing values by the average expression value for the particular gene. (Note: Imputing data has to be used with caution!)
+
+<!-- -->
+
+###3. Visualize the data in the CO2 dataset in a way that gives you a deeper understanding of the data. What do you see?
+
+```{r}
+ggplot(CO2, aes(y = uptake, x = Type)) +geom_point(aes(color = Treatment)) +
+  theme_classic()
+```
+
+## Task 7
+
+### 1. Install the Tidybiology package, which includes the data 'chromosome' and 'proteins'
+
+```{r}
+#devtools::install_github("hirscheylab/tidybiology")
+library(tidybiology)
+```
+
+##### a. Extract summary statistics (mean, median and maximum) for the following variables from the 'chromosome' data: variations, protein coding genes, and miRNAs. Utilize the tidyverse functions to make this as simply as possible.
+
+```{r}
+summary(chromosome)
+```
+
+##### b. How does the chromosome size distribute? Plot a graph that helps to visualize this by using ggplot2 package functions.
+
+```{r}
+ggplot(chromosome, aes(y = length_mm, x = id)) +geom_col() +theme_classic()
+```
+
+##### c. Does the number of protein coding genes or miRNAs correlate with the length of the chromosome? Make two separate plots to visualize these relationships.
+
+```{r}
+library(patchwork)
+options(repr.plot.width = 8, repr.plot.height = 4, repr.plot.res = 150)
+p1= ggplot(chromosome, aes(x = length_mm, y = protein_codinggenes)) + geom_point() + geom_smooth(method=lm, se=FALSE) +theme_classic()
+p2= ggplot(chromosome, aes(x = length_mm, y = mi_rna)) + geom_point() + geom_smooth(method=lm, se=FALSE) +theme_classic()
+p1+p2+plot_layout(ncol=2)
+```
+
+##### d. Calculate the same summary statistics for the 'proteins' data variables length and mass. Create a meaningful visualization of the relationship between these two variables by utilizing the ggplot2 package functions. Play with the colors, theme- and other visualization parameters to create a plot that pleases you.
+
+```{r}
+ggplot(proteins, aes(x = mass, y = length)) + geom_point() + geom_smooth(method=lm, se=FALSE) +theme_classic()
+```
